@@ -1,0 +1,10 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "paths": {
+      "expo-sms-reader": ["../src/index"],
+      "expo-sms-reader/*": ["../src/*"]
+    }
+  }
+}
