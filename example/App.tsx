@@ -1,49 +1,68 @@
-import { useEvent } from 'expo';
-import ExpoSmsReader, { ExpoSmsReaderView } from 'expo-sms-reader';
-import { Button, SafeAreaView, ScrollView, Text, View } from 'react-native';
+import { useEvent } from "expo";
+import ExpoSmsReader from "expo-sms-reader";
+import { Sms } from "expo-sms-reader/ExpoSmsReaderModule";
+import React from "react";
+import { Button, SafeAreaView, ScrollView, Text, View } from "react-native";
 
 export default function App() {
-  const onChangePayload = useEvent(ExpoSmsReader, 'onChange');
+  // React.useEffect(() => {
+  //   async function requestPermissions() {
+  //     const granted = await ExpoSmsReader.requestSmsPermissionsAsync();
+  //     console.log("Permissions granted:", granted);
+  //   }
+  //   requestPermissions();
+  // }, []);
+
+  const [sms, setSms] = React.useState<Sms[]>([]);
+  // React.useEffect(() => {
+  //   async function readSms() {
+  //     const sms = await ExpoSmsReader.readAllSmsAsync();
+  //     console.log(sms.length);
+  //     setSms(sms);
+  //   }
+  //   readSms();
+  // }, []);
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.container}>
+      <View style={styles.container}>
         <Text style={styles.header}>Module API Example</Text>
-        <Group name="Constants">
-          <Text>{ExpoSmsReader.PI}</Text>
-        </Group>
-        <Group name="Functions">
-          <Text>{ExpoSmsReader.hello()}</Text>
-        </Group>
-        <Group name="Async functions">
+        <View style={styles.group}>
+          <Text style={styles.groupHeader}>Permissions</Text>
           <Button
-            title="Set value"
+            title="Request Permissions"
             onPress={async () => {
-              await ExpoSmsReader.setValueAsync('Hello from JS!');
+              const granted = await ExpoSmsReader.requestSmsPermissionsAsync();
+              console.log("Permissions granted:", granted);
             }}
           />
-        </Group>
-        <Group name="Events">
-          <Text>{onChangePayload?.value}</Text>
-        </Group>
-        <Group name="Views">
-          <ExpoSmsReaderView
-            url="https://www.example.com"
-            onLoad={({ nativeEvent: { url } }) => console.log(`Loaded: ${url}`)}
-            style={styles.view}
+        </View>
+        <View style={styles.group}>
+          <Text style={styles.groupHeader}>Read SMS</Text>
+          <Button
+            title="Read SMS"
+            onPress={async () => {
+              const sms = await ExpoSmsReader.readAllSmsAsync();
+              console.log(sms.length);
+              // setSms(sms);
+              // only first 20
+              setSms(sms.slice(0, 20));
+            }}
           />
-        </Group>
-      </ScrollView>
+        </View>
+        <ScrollView style={styles.group}>
+          <Text style={styles.groupHeader}>SMS</Text>
+          {sms.map((sms, index) => (
+            <View key={index} style={styles.group}>
+              <Text>Address: {sms.address}</Text>
+              <Text>Body: {sms.body}</Text>
+              <Text>Date: {new Date(sms.date).toString()}</Text>
+              <Text>Type: {sms.type ? "Sent" : "Received"}</Text>
+            </View>
+          ))}
+        </ScrollView>
+      </View>
     </SafeAreaView>
-  );
-}
-
-function Group(props: { name: string; children: React.ReactNode }) {
-  return (
-    <View style={styles.group}>
-      <Text style={styles.groupHeader}>{props.name}</Text>
-      {props.children}
-    </View>
   );
 }
 
@@ -58,13 +77,13 @@ const styles = {
   },
   group: {
     margin: 20,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 10,
     padding: 20,
   },
   container: {
     flex: 1,
-    backgroundColor: '#eee',
+    backgroundColor: "#eee",
   },
   view: {
     flex: 1,

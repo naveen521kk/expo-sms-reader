@@ -4,47 +4,58 @@ import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
 import java.net.URL
 
+import expo.modules.interfaces.permissions.Permissions
+import expo.modules.kotlin.Promise
+import android.Manifest
+import android.database.Cursor
+import android.provider.Telephony
+import expo.modules.core.interfaces.Arguments
+import expo.modules.kotlin.exception.Exceptions
+
 class ExpoSmsReaderModule : Module() {
-  // Each module class must implement the definition function. The definition consists of components
-  // that describes the module's functionality and behavior.
-  // See https://docs.expo.dev/modules/module-api for more details about available components.
   override fun definition() = ModuleDefinition {
-    // Sets the name of the module that JavaScript code will use to refer to the module. Takes a string as an argument.
-    // Can be inferred from module's class name, but it's recommended to set it explicitly for clarity.
-    // The module will be accessible from `requireNativeModule('ExpoSmsReader')` in JavaScript.
     Name("ExpoSmsReader")
 
-    // Sets constant properties on the module. Can take a dictionary or a closure that returns a dictionary.
-    Constants(
-      "PI" to Math.PI
-    )
-
-    // Defines event names that the module can send to JavaScript.
-    Events("onChange")
-
-    // Defines a JavaScript synchronous function that runs the native code on the JavaScript thread.
-    Function("hello") {
-      "Hello world! 👋"
+    AsyncFunction("requestSmsPermissionsAsync") { promise: Promise ->
+      Permissions.askForPermissionsWithPermissionsManager(appContext.permissions, promise, Manifest.permission.READ_SMS)
     }
 
-    // Defines a JavaScript function that always returns a Promise and whose native code
-    // is by default dispatched on the different thread than the JavaScript runtime runs on.
-    AsyncFunction("setValueAsync") { value: String ->
-      // Send an event to JavaScript.
-      sendEvent("onChange", mapOf(
-        "value" to value
-      ))
+    AsyncFunction("getSmsPermissionsAsync") { promise: Promise ->
+      Permissions.getPermissionsWithPermissionsManager(appContext.permissions, promise, Manifest.permission.READ_SMS)
     }
 
-    // Enables the module to be used as a native view. Definition components that are accepted as part of
-    // the view definition: Prop, Events.
-    View(ExpoSmsReaderView::class) {
-      // Defines a setter for the `url` prop.
-      Prop("url") { view: ExpoSmsReaderView, url: URL ->
-        view.webView.loadUrl(url.toString())
+    AsyncFunction("readAllSmsAsync") { promise: Promise ->
+      if (appContext.reactContext === null) {
+        promise.reject(Exceptions.ReactContextLost())
       }
-      // Defines an event that the view can send to JavaScript.
-      Events("onLoad")
+      val cursor: Cursor? = appContext.reactContext?.contentResolver?.query(
+        Telephony.Sms.CONTENT_URI,
+        arrayOf(
+          Telephony.Sms.ADDRESS,
+          Telephony.Sms.BODY,
+          Telephony.Sms.DATE,
+          Telephony.Sms.TYPE
+        ),
+        null,
+        null,
+        Telephony.Sms.DEFAULT_SORT_ORDER
+      )
+
+      val smsList = ArrayList<Map<String, Any>>();
+      cursor?.use {
+        while (it.moveToNext()) {
+          print(it)
+          val sms = mapOf(
+            "address" to it.getString(0).toString(),
+            "body" to it.getString(1).toString(),
+            "date" to it.getLong(2).toDouble(),
+            "type" to it.getInt(3).toString()
+          )
+          smsList.add(sms)
+        }
+      }
+
+      promise.resolve(smsList)
     }
   }
 }

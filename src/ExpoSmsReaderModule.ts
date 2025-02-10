@@ -1,12 +1,17 @@
-import { NativeModule, requireNativeModule } from 'expo';
+import { NativeModule, requireNativeModule } from "expo";
 
-import { ExpoSmsReaderModuleEvents } from './ExpoSmsReader.types';
+export interface Sms {
+  address: string;
+  body: string;
+  date: number;
+  type: boolean;
+}
 
-declare class ExpoSmsReaderModule extends NativeModule<ExpoSmsReaderModuleEvents> {
-  PI: number;
-  hello(): string;
-  setValueAsync(value: string): Promise<void>;
+declare class ExpoSmsReaderModule extends NativeModule {
+  requestSmsPermissionsAsync(): Promise<boolean>;
+  getSmsPermissionsAsync(): Promise<boolean>;
+  readAllSmsAsync(): Promise<Sms[]>;
 }
 
 // This call loads the native module object from the JSI.
-export default requireNativeModule<ExpoSmsReaderModule>('ExpoSmsReader');
+export default requireNativeModule<ExpoSmsReaderModule>("ExpoSmsReader");
