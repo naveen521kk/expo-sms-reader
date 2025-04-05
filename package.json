@@ -1,6 +1,6 @@
 {
-  "name": "expo-sms-reader",
-  "version": "0.1.0",
+  "name": "@naveen521kk/expo-sms-reader",
+  "version": "0.0.1",
   "description": "Read SMS in expo for android",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -13,7 +13,8 @@
     "prepublishOnly": "expo-module prepublishOnly",
     "expo-module": "expo-module",
     "open:ios": "xed example/ios",
-    "open:android": "open -a \"Android Studio\" example/android"
+    "open:android": "open -a \"Android Studio\" example/android",
+    "release": "release-it"
   },
   "keywords": [
     "react-native",
@@ -33,12 +34,17 @@
     "@types/react": "~18.3.12",
     "expo-module-scripts": "^4.0.3",
     "expo": "~52.0.0",
-    "react-native": "0.76.0"
+    "react-native": "0.76.0",
+    "release-it": "^18.1.2"
   },
   "peerDependencies": {
     "expo": "*",
     "react": "*",
     "react-native": "*"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
   },
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }
