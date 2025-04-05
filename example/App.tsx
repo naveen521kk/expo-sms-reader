@@ -42,7 +42,7 @@ export default function App() {
           <Button
             title="Read SMS"
             onPress={async () => {
-              const sms = await ExpoSmsReader.readAllSmsAsync();
+              const sms = await ExpoSmsReader.readSmsAsync(2, 2);
               console.log(sms.length);
               // setSms(sms);
               // only first 20

@@ -57,5 +57,40 @@ class ExpoSmsReaderModule : Module() {
 
       promise.resolve(smsList)
     }
+
+    AsyncFunction("readSmsAsync") { limit: Int, offset: Int, promise: Promise ->
+      if (appContext.reactContext === null) {
+        promise.reject(Exceptions.ReactContextLost())
+      }
+      val cursor: Cursor? = appContext.reactContext?.contentResolver?.query(
+        Telephony.Sms.CONTENT_URI,
+        arrayOf(
+          Telephony.Sms.ADDRESS,
+          Telephony.Sms.BODY,
+          Telephony.Sms.DATE,
+          Telephony.Sms.TYPE,
+        ),
+        null,
+        null,
+        Telephony.Sms.DEFAULT_SORT_ORDER + " LIMIT $limit OFFSET $offset"
+      )
+
+      val smsList = ArrayList<Map<String, Any>>();
+      cursor?.use {
+        while (it.moveToNext()) {
+          print(it)
+          val sms = mapOf(
+            "address" to it.getString(0).toString(),
+            "body" to it.getString(1).toString(),
+            "date" to it.getLong(2).toDouble(),
+            "type" to it.getInt(3).toString()
+          )
+          smsList.add(sms)
+        }
+      }
+
+      promise.resolve(smsList)
+
+    }
   }
 }
